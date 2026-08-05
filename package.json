@@ -1,0 +1,28 @@
+{
+  "name": "ngo-school-erp",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=24 <25",
+    "pnpm": ">=11 <12"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @ngo-school-erp/frontend --filter @ngo-school-erp/backend dev",
+    "build": "pnpm --filter @ngo-school-erp/contracts build && pnpm --filter @ngo-school-erp/backend build && pnpm --filter @ngo-school-erp/frontend build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm --filter @ngo-school-erp/contracts build && pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:test": "supabase test db",
+    "db:reset": "supabase db reset",
+    "bootstrap:admin": "pnpm --filter @ngo-school-erp/backend bootstrap:admin",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "latest",
+    "supabase": "2.111.0"
+  }
+}

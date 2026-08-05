@@ -1,0 +1,21 @@
+{
+  "name": "@ngo-school-erp/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"No contract runtime tests in Phase Zero\""
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
+  }
+}

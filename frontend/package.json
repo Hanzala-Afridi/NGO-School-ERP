@@ -1,0 +1,37 @@
+{
+  "name": "@ngo-school-erp/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"No frontend tests in Phase Zero\""
+  },
+  "dependencies": {
+    "@ngo-school-erp/contracts": "workspace:*",
+    "class-variance-authority": "latest",
+    "@supabase/ssr": "0.12.4",
+    "@supabase/supabase-js": "2.112.0",
+    "clsx": "latest",
+    "lucide-react": "latest",
+    "next": "latest",
+    "radix-ui": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "tailwind-merge": "latest",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "eslint": "9.39.5",
+    "eslint-config-next": "latest",
+    "tailwindcss": "latest",
+    "typescript": "6.0.3"
+  }
+}

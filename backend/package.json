@@ -1,0 +1,40 @@
+{
+  "name": "@ngo-school-erp/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "bootstrap:admin": "tsx src/cli/bootstrap-admin.ts"
+  },
+  "dependencies": {
+    "@ngo-school-erp/contracts": "workspace:*",
+    "@supabase/supabase-js": "2.112.0",
+    "cors": "latest",
+    "express": "latest",
+    "express-rate-limit": "latest",
+    "helmet": "latest",
+    "pino": "latest",
+    "pino-http": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@types/cors": "latest",
+    "@types/express": "latest",
+    "@types/node": "latest",
+    "@types/supertest": "latest",
+    "eslint": "9.39.5",
+    "globals": "latest",
+    "supertest": "latest",
+    "tsx": "latest",
+    "typescript": "6.0.3",
+    "typescript-eslint": "latest",
+    "vitest": "latest"
+  }
+}
