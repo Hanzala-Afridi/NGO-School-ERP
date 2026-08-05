@@ -2,6 +2,7 @@ import { Router, type Request } from 'express'
 import rateLimit from 'express-rate-limit'
 import { z } from 'zod'
 
+import { environment } from '../../../config/env.js'
 import { authenticate } from '../../../middleware/authenticate.js'
 import { requirePermission } from '../../../middleware/authorize.js'
 import { enforceRecordScope } from '../../../middleware/record-scope.js'
@@ -56,7 +57,7 @@ export function createAuthRouter(dependencies: {
   const protectedSelf = [authMiddleware, selfPermission, selfScope]
   const credentialLimiter = rateLimit({
     windowMs: 15 * 60_000,
-    limit: 10,
+    limit: environment.NODE_ENV === 'development' ? 1000 : 10,
     standardHeaders: 'draft-8',
     legacyHeaders: false,
   })

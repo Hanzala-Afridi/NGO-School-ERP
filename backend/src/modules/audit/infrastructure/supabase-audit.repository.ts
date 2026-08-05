@@ -20,10 +20,7 @@ export class SupabaseAuditRepository implements AuditRepository {
       ip_address: event.ipAddress ?? null,
       user_agent: event.userAgent ?? null,
     }
-    const { error } = await this.client.from('audit_logs').upsert(payload, {
-      onConflict: 'action,session_id',
-      ignoreDuplicates: event.action === 'auth.session.accepted',
-    })
+    const { error } = await this.client.from('audit_logs').insert(payload)
     if (error) {
       throw new Error(`Security audit write failed: ${error.message}`)
     }

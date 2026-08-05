@@ -27,6 +27,12 @@ export const errorHandler: ErrorRequestHandler = (error, request, response, _nex
     return
   }
 
-  logger.error({ error, requestId: request.id }, 'Unhandled request error')
+  logger.error(
+    {
+      err: error instanceof Error ? { message: error.message, stack: error.stack, name: error.name } : error,
+      requestId: request.id,
+    },
+    'Unhandled request error',
+  )
   response.status(500).json(errorResponse('INTERNAL_SERVER_ERROR', 'An unexpected error occurred'))
 }

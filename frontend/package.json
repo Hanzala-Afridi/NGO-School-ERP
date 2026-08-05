@@ -11,16 +11,19 @@
     "test": "echo \"No frontend tests in Phase Zero\""
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.7.1",
     "@ngo-school-erp/contracts": "workspace:*",
-    "class-variance-authority": "latest",
     "@supabase/ssr": "0.12.4",
     "@supabase/supabase-js": "2.112.0",
+    "@tanstack/react-query": "^5.101.4",
+    "class-variance-authority": "latest",
     "clsx": "latest",
     "lucide-react": "latest",
     "next": "latest",
     "radix-ui": "latest",
     "react": "latest",
     "react-dom": "latest",
+    "react-hook-form": "^7.84.0",
     "tailwind-merge": "latest",
     "zod": "4.4.3"
   },

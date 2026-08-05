@@ -25,6 +25,9 @@ import { AuthorizationService } from './modules/rbac/application/authorization.s
 import { RbacService } from './modules/rbac/application/rbac.service.js'
 import { SupabaseRbacRepository } from './modules/rbac/infrastructure/supabase-rbac.repository.js'
 import { createRbacRouter } from './modules/rbac/http/rbac.routes.js'
+import { AcademicsService } from './modules/academics/application/academics.service.js'
+import { SupabaseAcademicsRepository } from './modules/academics/infrastructure/supabase-academics.repository.js'
+import { createAcademicsRouter } from './modules/academics/http/academics.routes.js'
 
 function createSecurityDependencies() {
   const adminClient = createAdminSupabaseClient()
@@ -40,6 +43,7 @@ function createSecurityDependencies() {
     authorization,
     identityService: new IdentityService(identities, authGateway, audit),
     rbacService: new RbacService(rbacRepository, audit),
+    academicsService: new AcademicsService(new SupabaseAcademicsRepository(adminClient), audit),
   }
 }
 
@@ -91,6 +95,15 @@ export function createApp() {
     '/api/v1',
     createRbacRouter({
       service: security.rbacService,
+      authentication: security.authentication,
+      authorization: security.authorization,
+      audit: security.audit,
+    }),
+  )
+  app.use(
+    '/api/v1',
+    createAcademicsRouter({
+      service: security.academicsService,
       authentication: security.authentication,
       authorization: security.authorization,
       audit: security.audit,
