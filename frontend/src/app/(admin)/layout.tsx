@@ -11,6 +11,8 @@ const navLinks = [
   { href: '/classes', label: 'Classes' },
   { href: '/sections', label: 'Sections' },
   { href: '/subjects', label: 'Subjects' },
+  { href: '/teacher-assignments', label: 'Teacher Assignments' },
+  { href: '/timetable', label: 'Timetable' },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

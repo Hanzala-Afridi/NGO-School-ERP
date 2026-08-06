@@ -13,6 +13,8 @@ describe('Academics permissions and route prerequisites', () => {
     expect(() => authorization.requirePermission(teacherContext, 'schools.read')).toThrow()
     expect(() => authorization.requirePermission(teacherContext, 'academic_years.create')).toThrow()
     expect(() => authorization.requirePermission(teacherContext, 'classes.update')).toThrow()
+    expect(() => authorization.requirePermission(teacherContext, 'teachers.assign')).toThrow()
+    expect(() => authorization.requirePermission(teacherContext, 'timetable.create')).toThrow()
   })
 
   it('allows access when required academic permission is present', () => {
@@ -25,6 +27,11 @@ describe('Academics permissions and route prerequisites', () => {
         'classes.create',
         'sections.create',
         'subjects.create',
+        'teachers.assign',
+        'timetable.read',
+        'timetable.create',
+        'timetable.update',
+        'timetable.delete',
       ]),
     })
 
@@ -33,5 +40,7 @@ describe('Academics permissions and route prerequisites', () => {
       authorization.requirePermission(adminContext, 'academic_years.create'),
     ).not.toThrow()
     expect(() => authorization.requirePermission(adminContext, 'classes.create')).not.toThrow()
+    expect(() => authorization.requirePermission(adminContext, 'teachers.assign')).not.toThrow()
+    expect(() => authorization.requirePermission(adminContext, 'timetable.create')).not.toThrow()
   })
 })

@@ -76,3 +76,32 @@ export interface Subject {
   createdAt: string
   updatedAt: string
 }
+
+export interface TeacherAssignment {
+  id: string
+  teacherId: string
+  academicYearId: string
+  classId: string
+  sectionId: string | null
+  subjectId: string | null
+  isClassTeacher: boolean
+  status: EntityStatus
+  createdAt: string
+  updatedAt: string
+}
+
+export interface TimetableEntry {
+  id: string
+  academicYearId: string
+  classId: string
+  sectionId: string | null
+  subjectId: string
+  teacherId: string | null
+  weekday: number
+  startTime: string
+  endTime: string
+  room: string | null
+  status: EntityStatus
+  createdAt: string
+  updatedAt: string
+}

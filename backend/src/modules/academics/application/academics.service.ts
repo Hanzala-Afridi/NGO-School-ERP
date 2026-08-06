@@ -5,7 +5,9 @@ import type {
   School,
   Section,
   Subject,
+  TeacherAssignment,
   Term,
+  TimetableEntry,
 } from '@ngo-school-erp/contracts'
 
 import { AppError } from '../../../shared/app-error.js'
@@ -371,5 +373,168 @@ export class AcademicsService {
       sessionId: actor.sessionId,
     })
     return updated
+  }
+
+  // ── Teacher Assignments ────────────────────────────────────────────────────
+
+  listTeacherAssignments(filter?: {
+    teacherId?: string
+    academicYearId?: string
+    classId?: string
+    sectionId?: string
+    subjectId?: string
+  }): Promise<TeacherAssignment[]> {
+    return this.repository.listTeacherAssignments(filter)
+  }
+
+  async getTeacherAssignment(id: string): Promise<TeacherAssignment> {
+    const assignment = await this.repository.findTeacherAssignmentById(id)
+    if (!assignment) {
+      throw new AppError(404, 'TEACHER_ASSIGNMENT_NOT_FOUND', 'Teacher assignment was not found')
+    }
+    return assignment
+  }
+
+  async createTeacherAssignment(
+    actor: AuthContext,
+    input: {
+      teacherId: string
+      academicYearId: string
+      classId: string
+      sectionId?: string | null
+      subjectId?: string | null
+      isClassTeacher?: boolean
+    },
+  ): Promise<TeacherAssignment> {
+    const assignment = await this.repository.createTeacherAssignment(input)
+    await this.audit.record({
+      actorProfileId: actor.profile.id,
+      action: 'academics.teacher_assignment.created',
+      outcome: 'success',
+      entityType: 'teacher_assignment',
+      entityId: assignment.id,
+      newValues: input,
+      sessionId: actor.sessionId,
+    })
+    return assignment
+  }
+
+  async updateTeacherAssignment(
+    actor: AuthContext,
+    id: string,
+    patch: Partial<{
+      teacherId: string
+      academicYearId: string
+      classId: string
+      sectionId: string | null
+      subjectId: string | null
+      isClassTeacher: boolean
+      status: 'active' | 'inactive'
+    }>,
+  ): Promise<TeacherAssignment> {
+    const previous = await this.getTeacherAssignment(id)
+    const updated = await this.repository.updateTeacherAssignment(id, patch)
+    await this.audit.record({
+      actorProfileId: actor.profile.id,
+      action: 'academics.teacher_assignment.updated',
+      outcome: 'success',
+      entityType: 'teacher_assignment',
+      entityId: id,
+      oldValues: { teacherId: previous.teacherId, status: previous.status },
+      newValues: patch,
+      sessionId: actor.sessionId,
+    })
+    return updated
+  }
+
+  // ── Timetable ─────────────────────────────────────────────────────────────
+
+  listTimetableEntries(filter?: {
+    academicYearId?: string
+    classId?: string
+    sectionId?: string
+    subjectId?: string
+    teacherId?: string
+    weekday?: number
+  }): Promise<TimetableEntry[]> {
+    return this.repository.listTimetableEntries(filter)
+  }
+
+  async getTimetableEntry(id: string): Promise<TimetableEntry> {
+    const entry = await this.repository.findTimetableEntryById(id)
+    if (!entry) throw new AppError(404, 'TIMETABLE_ENTRY_NOT_FOUND', 'Timetable entry was not found')
+    return entry
+  }
+
+  async createTimetableEntry(
+    actor: AuthContext,
+    input: {
+      academicYearId: string
+      classId: string
+      sectionId?: string | null
+      subjectId: string
+      teacherId?: string | null
+      weekday: number
+      startTime: string
+      endTime: string
+      room?: string | null
+    },
+  ): Promise<TimetableEntry> {
+    const entry = await this.repository.createTimetableEntry(input)
+    await this.audit.record({
+      actorProfileId: actor.profile.id,
+      action: 'academics.timetable_entry.created',
+      outcome: 'success',
+      entityType: 'timetable_entry',
+      entityId: entry.id,
+      newValues: input,
+      sessionId: actor.sessionId,
+    })
+    return entry
+  }
+
+  async updateTimetableEntry(
+    actor: AuthContext,
+    id: string,
+    patch: Partial<{
+      academicYearId: string
+      classId: string
+      sectionId: string | null
+      subjectId: string
+      teacherId: string | null
+      weekday: number
+      startTime: string
+      endTime: string
+      room: string | null
+      status: 'active' | 'inactive'
+    }>,
+  ): Promise<TimetableEntry> {
+    const previous = await this.getTimetableEntry(id)
+    const updated = await this.repository.updateTimetableEntry(id, patch)
+    await this.audit.record({
+      actorProfileId: actor.profile.id,
+      action: 'academics.timetable_entry.updated',
+      outcome: 'success',
+      entityType: 'timetable_entry',
+      entityId: id,
+      oldValues: { weekday: previous.weekday, startTime: previous.startTime, endTime: previous.endTime },
+      newValues: patch,
+      sessionId: actor.sessionId,
+    })
+    return updated
+  }
+
+  async deleteTimetableEntry(actor: AuthContext, id: string): Promise<void> {
+    const previous = await this.getTimetableEntry(id)
+    await this.repository.deleteTimetableEntry(id)
+    await this.audit.record({
+      actorProfileId: actor.profile.id,
+      action: 'academics.timetable_entry.deleted',
+      outcome: 'success',
+      entityType: 'timetable_entry',
+      entityId: id,
+      oldValues: { weekday: previous.weekday, startTime: previous.startTime, endTime: previous.endTime },
+      sessionId: actor.sessionId,
+    })
   }
 }

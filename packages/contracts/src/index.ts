@@ -7,7 +7,9 @@ export type {
   School,
   Section,
   Subject,
+  TeacherAssignment,
   Term,
+  TimetableEntry,
 } from './academics.js'
 export type { AuthProfile, AuthSession, CurrentIdentity } from './auth.js'
 export type { PaginatedUsers, UserSummary } from './identity.js'

@@ -168,9 +168,84 @@ const subjectUpdateSchema = z
   })
   .refine((v) => Object.keys(v).length > 0, 'At least one field is required')
 
+const teacherAssignmentCreateSchema = z.object({
+  teacherId: z.string().uuid(),
+  academicYearId: z.string().uuid(),
+  classId: z.string().uuid(),
+  sectionId: z.string().uuid().nullable().optional(),
+  subjectId: z.string().uuid().nullable().optional(),
+  isClassTeacher: z.boolean().optional(),
+})
+
+const teacherAssignmentUpdateSchema = z
+  .object({
+    teacherId: z.string().uuid().optional(),
+    academicYearId: z.string().uuid().optional(),
+    classId: z.string().uuid().optional(),
+    sectionId: z.string().uuid().nullable().optional(),
+    subjectId: z.string().uuid().nullable().optional(),
+    isClassTeacher: z.boolean().optional(),
+    status: statusSchema.optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, 'At least one field is required')
+
+const timetableEntryCreateSchema = z
+  .object({
+    academicYearId: z.string().uuid(),
+    classId: z.string().uuid(),
+    sectionId: z.string().uuid().nullable().optional(),
+    subjectId: z.string().uuid(),
+    teacherId: z.string().uuid().nullable().optional(),
+    weekday: z.number().int().min(1).max(7),
+    startTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, 'Invalid time format HH:MM'),
+    endTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, 'Invalid time format HH:MM'),
+    room: z.string().trim().max(100).nullable().optional(),
+  })
+  .refine((v) => v.endTime > v.startTime, {
+    message: 'endTime must be after startTime',
+    path: ['endTime'],
+  })
+
+const timetableEntryUpdateSchema = z
+  .object({
+    academicYearId: z.string().uuid().optional(),
+    classId: z.string().uuid().optional(),
+    sectionId: z.string().uuid().nullable().optional(),
+    subjectId: z.string().uuid().optional(),
+    teacherId: z.string().uuid().nullable().optional(),
+    weekday: z.number().int().min(1).max(7).optional(),
+    startTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/).optional(),
+    endTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/).optional(),
+    room: z.string().trim().max(100).nullable().optional(),
+    status: statusSchema.optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, 'At least one field is required')
+  .refine(
+    (v) => !v.startTime || !v.endTime || v.endTime > v.startTime,
+    {
+      message: 'endTime must be after startTime',
+      path: ['endTime'],
+    },
+  )
+
 const schoolIdFilter = z.object({ schoolId: z.string().uuid().optional() })
 const academicYearIdFilter = z.object({ academicYearId: z.string().uuid().optional() })
 const classIdFilter = z.object({ classId: z.string().uuid().optional() })
+const teacherAssignmentFilterSchema = z.object({
+  teacherId: z.string().uuid().optional(),
+  academicYearId: z.string().uuid().optional(),
+  classId: z.string().uuid().optional(),
+  sectionId: z.string().uuid().optional(),
+  subjectId: z.string().uuid().optional(),
+})
+const timetableFilterSchema = z.object({
+  academicYearId: z.string().uuid().optional(),
+  classId: z.string().uuid().optional(),
+  sectionId: z.string().uuid().optional(),
+  subjectId: z.string().uuid().optional(),
+  teacherId: z.string().uuid().optional(),
+  weekday: z.coerce.number().int().min(1).max(7).optional(),
+})
 
 // ── Router factory ─────────────────────────────────────────────────────────
 
@@ -601,6 +676,148 @@ export function createAcademicsRouter(dependencies: {
           ),
         ),
       )
+    },
+  )
+
+  // ── Teacher Assignments ───────────────────────────────────────────────────
+
+  router.get(
+    '/teacher-assignments',
+    authenticated,
+    permitted('teachers.assign'),
+    globalScope,
+    async (request, response) => {
+      const filter = teacherAssignmentFilterSchema.parse(request.query)
+      response.json(successResponse(await dependencies.service.listTeacherAssignments(filter)))
+    },
+  )
+
+  router.get(
+    '/teacher-assignments/:id',
+    authenticated,
+    permitted('teachers.assign'),
+    globalScope,
+    async (request, response) => {
+      response.json(
+        successResponse(
+          await dependencies.service.getTeacherAssignment(idSchema.parse(request.params.id)),
+        ),
+      )
+    },
+  )
+
+  router.post(
+    '/teacher-assignments',
+    authenticated,
+    permitted('teachers.assign'),
+    globalScope,
+    async (request, response) => {
+      response
+        .status(201)
+        .json(
+          successResponse(
+            await dependencies.service.createTeacherAssignment(
+              request.auth!,
+              teacherAssignmentCreateSchema.parse(request.body),
+            ),
+          ),
+        )
+    },
+  )
+
+  router.patch(
+    '/teacher-assignments/:id',
+    authenticated,
+    permitted('teachers.assign'),
+    globalScope,
+    async (request, response) => {
+      response.json(
+        successResponse(
+          await dependencies.service.updateTeacherAssignment(
+            request.auth!,
+            idSchema.parse(request.params.id),
+            teacherAssignmentUpdateSchema.parse(request.body),
+          ),
+        ),
+      )
+    },
+  )
+
+  // ── Timetable ─────────────────────────────────────────────────────────────
+
+  router.get(
+    '/timetable',
+    authenticated,
+    permitted('timetable.read'),
+    globalScope,
+    async (request, response) => {
+      const filter = timetableFilterSchema.parse(request.query)
+      response.json(successResponse(await dependencies.service.listTimetableEntries(filter)))
+    },
+  )
+
+  router.get(
+    '/timetable/:id',
+    authenticated,
+    permitted('timetable.read'),
+    globalScope,
+    async (request, response) => {
+      response.json(
+        successResponse(
+          await dependencies.service.getTimetableEntry(idSchema.parse(request.params.id)),
+        ),
+      )
+    },
+  )
+
+  router.post(
+    '/timetable',
+    authenticated,
+    permitted('timetable.create'),
+    globalScope,
+    async (request, response) => {
+      response
+        .status(201)
+        .json(
+          successResponse(
+            await dependencies.service.createTimetableEntry(
+              request.auth!,
+              timetableEntryCreateSchema.parse(request.body),
+            ),
+          ),
+        )
+    },
+  )
+
+  router.patch(
+    '/timetable/:id',
+    authenticated,
+    permitted('timetable.update'),
+    globalScope,
+    async (request, response) => {
+      response.json(
+        successResponse(
+          await dependencies.service.updateTimetableEntry(
+            request.auth!,
+            idSchema.parse(request.params.id),
+            timetableEntryUpdateSchema.parse(request.body),
+          ),
+        ),
+      )
+    },
+  )
+
+  router.delete(
+    '/timetable/:id',
+    authenticated,
+    permitted('timetable.delete'),
+    globalScope,
+    async (request, response) => {
+      await dependencies.service.deleteTimetableEntry(
+        request.auth!,
+        idSchema.parse(request.params.id),
+      )
+      response.json(successResponse({ deleted: true }))
     },
   )
 

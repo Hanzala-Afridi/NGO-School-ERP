@@ -264,3 +264,170 @@ export async function updateSubjectAction(
     return { error: err instanceof Error ? err.message : 'Failed to update subject.' }
   }
 }
+
+// ── Teacher Assignments ───────────────────────────────────────────────────
+
+export async function createTeacherAssignmentAction(
+  _state: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const token = await getToken()
+    const teacherId = String(formData.get('teacherId') ?? '')
+    const academicYearId = String(formData.get('academicYearId') ?? '')
+    const classId = String(formData.get('classId') ?? '')
+    const sectionIdRaw = formData.get('sectionId')
+    const subjectIdRaw = formData.get('subjectId')
+    const isClassTeacherRaw = formData.get('isClassTeacher')
+    const sectionId = sectionIdRaw ? String(sectionIdRaw) : null
+    const subjectId = subjectIdRaw ? String(subjectIdRaw) : null
+    const isClassTeacher = isClassTeacherRaw === 'true' || isClassTeacherRaw === 'on'
+
+    if (!teacherId || !academicYearId || !classId) {
+      return { error: 'Teacher, Academic Year, and Class are required.' }
+    }
+    await api.createTeacherAssignment(token, {
+      teacherId,
+      academicYearId,
+      classId,
+      sectionId,
+      subjectId,
+      isClassTeacher,
+    })
+    revalidatePath('/teacher-assignments')
+    return { message: 'Teacher assignment created.' }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to create teacher assignment.' }
+  }
+}
+
+export async function updateTeacherAssignmentAction(
+  _state: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const token = await getToken()
+    const id = String(formData.get('id') ?? '')
+    const patch: Record<string, unknown> = {}
+    const teacherId = formData.get('teacherId')
+    const academicYearId = formData.get('academicYearId')
+    const classId = formData.get('classId')
+    const sectionId = formData.get('sectionId')
+    const subjectId = formData.get('subjectId')
+    const isClassTeacher = formData.get('isClassTeacher')
+    const status = formData.get('status')
+
+    if (teacherId) patch.teacherId = String(teacherId)
+    if (academicYearId) patch.academicYearId = String(academicYearId)
+    if (classId) patch.classId = String(classId)
+    if (sectionId !== null) patch.sectionId = sectionId ? String(sectionId) : null
+    if (subjectId !== null) patch.subjectId = subjectId ? String(subjectId) : null
+    if (isClassTeacher !== null)
+      patch.isClassTeacher = isClassTeacher === 'true' || isClassTeacher === 'on'
+    if (status) patch.status = String(status)
+
+    await api.updateTeacherAssignment(token, id, patch)
+    revalidatePath('/teacher-assignments')
+    return { message: 'Teacher assignment updated.' }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to update teacher assignment.' }
+  }
+}
+
+// ── Timetable ─────────────────────────────────────────────────────────────
+
+export async function createTimetableEntryAction(
+  _state: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const token = await getToken()
+    const academicYearId = String(formData.get('academicYearId') ?? '')
+    const classId = String(formData.get('classId') ?? '')
+    const sectionIdRaw = formData.get('sectionId')
+    const subjectId = String(formData.get('subjectId') ?? '')
+    const teacherIdRaw = formData.get('teacherId')
+    const weekday = parseInt(String(formData.get('weekday') ?? ''), 10)
+    const startTime = String(formData.get('startTime') ?? '')
+    const endTime = String(formData.get('endTime') ?? '')
+    const roomRaw = formData.get('room')
+
+    const sectionId = sectionIdRaw ? String(sectionIdRaw) : null
+    const teacherId = teacherIdRaw ? String(teacherIdRaw) : null
+    const room = roomRaw ? String(roomRaw) : null
+
+    if (!academicYearId || !classId || !subjectId || isNaN(weekday) || !startTime || !endTime) {
+      return { error: 'Academic Year, Class, Subject, Weekday, Start Time, and End Time are required.' }
+    }
+
+    await api.createTimetableEntry(token, {
+      academicYearId,
+      classId,
+      sectionId,
+      subjectId,
+      teacherId,
+      weekday,
+      startTime,
+      endTime,
+      room,
+    })
+    revalidatePath('/timetable')
+    return { message: 'Timetable entry created.' }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to create timetable entry.' }
+  }
+}
+
+export async function updateTimetableEntryAction(
+  _state: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const token = await getToken()
+    const id = String(formData.get('id') ?? '')
+    const patch: Record<string, unknown> = {}
+    const academicYearId = formData.get('academicYearId')
+    const classId = formData.get('classId')
+    const sectionId = formData.get('sectionId')
+    const subjectId = formData.get('subjectId')
+    const teacherId = formData.get('teacherId')
+    const weekday = formData.get('weekday')
+    const startTime = formData.get('startTime')
+    const endTime = formData.get('endTime')
+    const room = formData.get('room')
+    const status = formData.get('status')
+
+    if (academicYearId) patch.academicYearId = String(academicYearId)
+    if (classId) patch.classId = String(classId)
+    if (sectionId !== null) patch.sectionId = sectionId ? String(sectionId) : null
+    if (subjectId) patch.subjectId = String(subjectId)
+    if (teacherId !== null) patch.teacherId = teacherId ? String(teacherId) : null
+    if (weekday) patch.weekday = parseInt(String(weekday), 10)
+    if (startTime) patch.startTime = String(startTime)
+    if (endTime) patch.endTime = String(endTime)
+    if (room !== null) patch.room = room ? String(room) : null
+    if (status) patch.status = String(status)
+
+    await api.updateTimetableEntry(token, id, patch)
+    revalidatePath('/timetable')
+    return { message: 'Timetable entry updated.' }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to update timetable entry.' }
+  }
+}
+
+export async function deleteTimetableEntryAction(
+  _state: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const token = await getToken()
+    const id = String(formData.get('id') ?? '')
+    if (!id) return { error: 'ID is required.' }
+    await api.deleteTimetableEntry(token, id)
+    revalidatePath('/timetable')
+    return { message: 'Timetable entry deleted.' }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to delete timetable entry.' }
+  }
+}

@@ -8,7 +8,9 @@ import type {
   School,
   Section,
   Subject,
+  TeacherAssignment,
   Term,
+  TimetableEntry,
 } from '@ngo-school-erp/contracts'
 
 import { serverEnvironment } from '@/lib/env'
@@ -258,4 +260,107 @@ export function updateSubject(
     headers: authHeader(token),
     body: JSON.stringify(patch),
   })
+}
+
+// Teacher Assignments
+
+export function getTeacherAssignments(
+  token: string,
+  filter?: { teacherId?: string; academicYearId?: string; classId?: string; sectionId?: string; subjectId?: string },
+): Promise<TeacherAssignment[]> {
+  const params = new URLSearchParams()
+  if (filter?.teacherId) params.set('teacherId', filter.teacherId)
+  if (filter?.academicYearId) params.set('academicYearId', filter.academicYearId)
+  if (filter?.classId) params.set('classId', filter.classId)
+  if (filter?.sectionId) params.set('sectionId', filter.sectionId)
+  if (filter?.subjectId) params.set('subjectId', filter.subjectId)
+  const qs = params.toString() ? `?${params.toString()}` : ''
+  return request(`/teacher-assignments${qs}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function createTeacherAssignment(
+  token: string,
+  input: {
+    teacherId: string
+    academicYearId: string
+    classId: string
+    sectionId?: string | null
+    subjectId?: string | null
+    isClassTeacher?: boolean
+  },
+): Promise<TeacherAssignment> {
+  return request('/teacher-assignments', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(input),
+  })
+}
+
+export function updateTeacherAssignment(
+  token: string,
+  id: string,
+  patch: Partial<Omit<TeacherAssignment, 'id' | 'createdAt' | 'updatedAt'>>,
+): Promise<TeacherAssignment> {
+  return request(`/teacher-assignments/${id}`, {
+    method: 'PATCH',
+    headers: authHeader(token),
+    body: JSON.stringify(patch),
+  })
+}
+
+// Timetable
+
+export function getTimetableEntries(
+  token: string,
+  filter?: { academicYearId?: string; classId?: string; sectionId?: string; subjectId?: string; teacherId?: string; weekday?: number },
+): Promise<TimetableEntry[]> {
+  const params = new URLSearchParams()
+  if (filter?.academicYearId) params.set('academicYearId', filter.academicYearId)
+  if (filter?.classId) params.set('classId', filter.classId)
+  if (filter?.sectionId) params.set('sectionId', filter.sectionId)
+  if (filter?.subjectId) params.set('subjectId', filter.subjectId)
+  if (filter?.teacherId) params.set('teacherId', filter.teacherId)
+  if (filter?.weekday !== undefined) params.set('weekday', String(filter.weekday))
+  const qs = params.toString() ? `?${params.toString()}` : ''
+  return request(`/timetable${qs}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function createTimetableEntry(
+  token: string,
+  input: {
+    academicYearId: string
+    classId: string
+    sectionId?: string | null
+    subjectId: string
+    teacherId?: string | null
+    weekday: number
+    startTime: string
+    endTime: string
+    room?: string | null
+  },
+): Promise<TimetableEntry> {
+  return request('/timetable', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(input),
+  })
+}
+
+export function updateTimetableEntry(
+  token: string,
+  id: string,
+  patch: Partial<Omit<TimetableEntry, 'id' | 'createdAt' | 'updatedAt'>>,
+): Promise<TimetableEntry> {
+  return request(`/timetable/${id}`, {
+    method: 'PATCH',
+    headers: authHeader(token),
+    body: JSON.stringify(patch),
+  })
+}
+
+export function deleteTimetableEntry(token: string, id: string): Promise<void> {
+  return request(`/timetable/${id}`, {
+    method: 'DELETE',
+    headers: authHeader(token),
+  }).then(() => undefined)
 }

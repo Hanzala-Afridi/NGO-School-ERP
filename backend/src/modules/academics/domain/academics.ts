@@ -5,7 +5,9 @@ import type {
   School,
   Section,
   Subject,
+  TeacherAssignment,
   Term,
+  TimetableEntry,
 } from '@ngo-school-erp/contracts'
 
 export interface AcademicsRepository {
@@ -130,4 +132,72 @@ export interface AcademicsRepository {
     id: string,
     patch: Partial<{ name: string; code: string; status: 'active' | 'inactive' }>,
   ): Promise<Subject>
+
+  // Teacher Assignments
+  listTeacherAssignments(filter?: {
+    teacherId?: string
+    academicYearId?: string
+    classId?: string
+    sectionId?: string
+    subjectId?: string
+  }): Promise<TeacherAssignment[]>
+  findTeacherAssignmentById(id: string): Promise<TeacherAssignment | null>
+  createTeacherAssignment(input: {
+    teacherId: string
+    academicYearId: string
+    classId: string
+    sectionId?: string | null
+    subjectId?: string | null
+    isClassTeacher?: boolean
+  }): Promise<TeacherAssignment>
+  updateTeacherAssignment(
+    id: string,
+    patch: Partial<{
+      teacherId: string
+      academicYearId: string
+      classId: string
+      sectionId: string | null
+      subjectId: string | null
+      isClassTeacher: boolean
+      status: 'active' | 'inactive'
+    }>,
+  ): Promise<TeacherAssignment>
+
+  // Timetable
+  listTimetableEntries(filter?: {
+    academicYearId?: string
+    classId?: string
+    sectionId?: string
+    subjectId?: string
+    teacherId?: string
+    weekday?: number
+  }): Promise<TimetableEntry[]>
+  findTimetableEntryById(id: string): Promise<TimetableEntry | null>
+  createTimetableEntry(input: {
+    academicYearId: string
+    classId: string
+    sectionId?: string | null
+    subjectId: string
+    teacherId?: string | null
+    weekday: number
+    startTime: string
+    endTime: string
+    room?: string | null
+  }): Promise<TimetableEntry>
+  updateTimetableEntry(
+    id: string,
+    patch: Partial<{
+      academicYearId: string
+      classId: string
+      sectionId: string | null
+      subjectId: string
+      teacherId: string | null
+      weekday: number
+      startTime: string
+      endTime: string
+      room: string | null
+      status: 'active' | 'inactive'
+    }>,
+  ): Promise<TimetableEntry>
+  deleteTimetableEntry(id: string): Promise<void>
 }

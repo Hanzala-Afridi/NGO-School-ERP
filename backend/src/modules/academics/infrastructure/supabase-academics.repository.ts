@@ -6,7 +6,9 @@ import type {
   School,
   Section,
   Subject,
+  TeacherAssignment,
   Term,
+  TimetableEntry,
 } from '@ngo-school-erp/contracts'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -106,6 +108,35 @@ type SubjectRow = {
   updated_at: string
 }
 
+type TeacherAssignmentRow = {
+  id: string
+  teacher_id: string
+  academic_year_id: string
+  class_id: string
+  section_id: string | null
+  subject_id: string | null
+  is_class_teacher: boolean
+  status: EntityStatus
+  created_at: string
+  updated_at: string
+}
+
+type TimetableEntryRow = {
+  id: string
+  academic_year_id: string
+  class_id: string
+  section_id: string | null
+  subject_id: string
+  teacher_id: string | null
+  weekday: number
+  start_time: string
+  end_time: string
+  room: string | null
+  status: EntityStatus
+  created_at: string
+  updated_at: string
+}
+
 // ── Mappers ───────────────────────────────────────────────────────────────────
 
 function mapSchool(row: SchoolRow): School {
@@ -193,6 +224,39 @@ function mapSubject(row: SubjectRow): Subject {
     schoolId: row.school_id,
     name: row.name,
     code: row.code,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+function mapTeacherAssignment(row: TeacherAssignmentRow): TeacherAssignment {
+  return {
+    id: row.id,
+    teacherId: row.teacher_id,
+    academicYearId: row.academic_year_id,
+    classId: row.class_id,
+    sectionId: row.section_id,
+    subjectId: row.subject_id,
+    isClassTeacher: row.is_class_teacher,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+function mapTimetableEntry(row: TimetableEntryRow): TimetableEntry {
+  return {
+    id: row.id,
+    academicYearId: row.academic_year_id,
+    classId: row.class_id,
+    sectionId: row.section_id,
+    subjectId: row.subject_id,
+    teacherId: row.teacher_id,
+    weekday: row.weekday,
+    startTime: row.start_time,
+    endTime: row.end_time,
+    room: row.room,
     status: row.status,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -569,5 +633,188 @@ export class SupabaseAcademicsRepository implements AcademicsRepository {
     const res = await this.client.from('subjects').update(update).eq('id', id).select('*').single()
     if (res.error) handleDbError(res.error)
     return mapSubject(res.data as SubjectRow)
+  }
+
+  // ── Teacher Assignments ────────────────────────────────────────────────────
+
+  async listTeacherAssignments(filter?: {
+    teacherId?: string
+    academicYearId?: string
+    classId?: string
+    sectionId?: string
+    subjectId?: string
+  }): Promise<TeacherAssignment[]> {
+    let query = this.client.from('teacher_assignments').select('*').order('created_at', { ascending: false })
+    if (filter?.teacherId) query = query.eq('teacher_id', filter.teacherId)
+    if (filter?.academicYearId) query = query.eq('academic_year_id', filter.academicYearId)
+    if (filter?.classId) query = query.eq('class_id', filter.classId)
+    if (filter?.sectionId) query = query.eq('section_id', filter.sectionId)
+    if (filter?.subjectId) query = query.eq('subject_id', filter.subjectId)
+    const res = await query
+    if (res.error) handleDbError(res.error)
+    const rows = res.data as TeacherAssignmentRow[]
+    return rows.map(mapTeacherAssignment)
+  }
+
+  async findTeacherAssignmentById(id: string): Promise<TeacherAssignment | null> {
+    const res = await this.client.from('teacher_assignments').select('*').eq('id', id).maybeSingle()
+    if (res.error) handleDbError(res.error)
+    if (!res.data) return null
+    return mapTeacherAssignment(res.data as TeacherAssignmentRow)
+  }
+
+  async createTeacherAssignment(input: {
+    teacherId: string
+    academicYearId: string
+    classId: string
+    sectionId?: string | null
+    subjectId?: string | null
+    isClassTeacher?: boolean
+  }): Promise<TeacherAssignment> {
+    const res = await this.client
+      .from('teacher_assignments')
+      .insert({
+        teacher_id: input.teacherId,
+        academic_year_id: input.academicYearId,
+        class_id: input.classId,
+        section_id: input.sectionId ?? null,
+        subject_id: input.subjectId ?? null,
+        is_class_teacher: input.isClassTeacher ?? false,
+      })
+      .select('*')
+      .single()
+    if (res.error) handleDbError(res.error)
+    return mapTeacherAssignment(res.data as TeacherAssignmentRow)
+  }
+
+  async updateTeacherAssignment(
+    id: string,
+    patch: Partial<{
+      teacherId: string
+      academicYearId: string
+      classId: string
+      sectionId: string | null
+      subjectId: string | null
+      isClassTeacher: boolean
+      status: EntityStatus
+    }>,
+  ): Promise<TeacherAssignment> {
+    const update: Record<string, unknown> = {}
+    if (patch.teacherId !== undefined) update.teacher_id = patch.teacherId
+    if (patch.academicYearId !== undefined) update.academic_year_id = patch.academicYearId
+    if (patch.classId !== undefined) update.class_id = patch.classId
+    if (patch.sectionId !== undefined) update.section_id = patch.sectionId
+    if (patch.subjectId !== undefined) update.subject_id = patch.subjectId
+    if (patch.isClassTeacher !== undefined) update.is_class_teacher = patch.isClassTeacher
+    if (patch.status !== undefined) update.status = patch.status
+    const res = await this.client
+      .from('teacher_assignments')
+      .update(update)
+      .eq('id', id)
+      .select('*')
+      .single()
+    if (res.error) handleDbError(res.error)
+    return mapTeacherAssignment(res.data as TeacherAssignmentRow)
+  }
+
+  // ── Timetable ─────────────────────────────────────────────────────────────
+
+  async listTimetableEntries(filter?: {
+    academicYearId?: string
+    classId?: string
+    sectionId?: string
+    subjectId?: string
+    teacherId?: string
+    weekday?: number
+  }): Promise<TimetableEntry[]> {
+    let query = this.client.from('timetable_entries').select('*').order('weekday').order('start_time')
+    if (filter?.academicYearId) query = query.eq('academic_year_id', filter.academicYearId)
+    if (filter?.classId) query = query.eq('class_id', filter.classId)
+    if (filter?.sectionId) query = query.eq('section_id', filter.sectionId)
+    if (filter?.subjectId) query = query.eq('subject_id', filter.subjectId)
+    if (filter?.teacherId) query = query.eq('teacher_id', filter.teacherId)
+    if (filter?.weekday !== undefined) query = query.eq('weekday', filter.weekday)
+    const res = await query
+    if (res.error) handleDbError(res.error)
+    const rows = res.data as TimetableEntryRow[]
+    return rows.map(mapTimetableEntry)
+  }
+
+  async findTimetableEntryById(id: string): Promise<TimetableEntry | null> {
+    const res = await this.client.from('timetable_entries').select('*').eq('id', id).maybeSingle()
+    if (res.error) handleDbError(res.error)
+    if (!res.data) return null
+    return mapTimetableEntry(res.data as TimetableEntryRow)
+  }
+
+  async createTimetableEntry(input: {
+    academicYearId: string
+    classId: string
+    sectionId?: string | null
+    subjectId: string
+    teacherId?: string | null
+    weekday: number
+    startTime: string
+    endTime: string
+    room?: string | null
+  }): Promise<TimetableEntry> {
+    const res = await this.client
+      .from('timetable_entries')
+      .insert({
+        academic_year_id: input.academicYearId,
+        class_id: input.classId,
+        section_id: input.sectionId ?? null,
+        subject_id: input.subjectId,
+        teacher_id: input.teacherId ?? null,
+        weekday: input.weekday,
+        start_time: input.startTime,
+        end_time: input.endTime,
+        room: input.room ?? null,
+      })
+      .select('*')
+      .single()
+    if (res.error) handleDbError(res.error)
+    return mapTimetableEntry(res.data as TimetableEntryRow)
+  }
+
+  async updateTimetableEntry(
+    id: string,
+    patch: Partial<{
+      academicYearId: string
+      classId: string
+      sectionId: string | null
+      subjectId: string
+      teacherId: string | null
+      weekday: number
+      startTime: string
+      endTime: string
+      room: string | null
+      status: EntityStatus
+    }>,
+  ): Promise<TimetableEntry> {
+    const update: Record<string, unknown> = {}
+    if (patch.academicYearId !== undefined) update.academic_year_id = patch.academicYearId
+    if (patch.classId !== undefined) update.class_id = patch.classId
+    if (patch.sectionId !== undefined) update.section_id = patch.sectionId
+    if (patch.subjectId !== undefined) update.subject_id = patch.subjectId
+    if (patch.teacherId !== undefined) update.teacher_id = patch.teacherId
+    if (patch.weekday !== undefined) update.weekday = patch.weekday
+    if (patch.startTime !== undefined) update.start_time = patch.startTime
+    if (patch.endTime !== undefined) update.end_time = patch.endTime
+    if (patch.room !== undefined) update.room = patch.room
+    if (patch.status !== undefined) update.status = patch.status
+    const res = await this.client
+      .from('timetable_entries')
+      .update(update)
+      .eq('id', id)
+      .select('*')
+      .single()
+    if (res.error) handleDbError(res.error)
+    return mapTimetableEntry(res.data as TimetableEntryRow)
+  }
+
+  async deleteTimetableEntry(id: string): Promise<void> {
+    const res = await this.client.from('timetable_entries').delete().eq('id', id)
+    if (res.error) handleDbError(res.error)
   }
 }
