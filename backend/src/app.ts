@@ -58,6 +58,15 @@ import { createWelfareRouter } from './modules/welfare/http/welfare.routes.js'
 import { InventoryService } from './modules/inventory/application/inventory.service.js'
 import { SupabaseInventoryRepository } from './modules/inventory/infrastructure/supabase-inventory.repository.js'
 import { createInventoryRouter } from './modules/inventory/http/inventory.routes.js'
+import { RationService } from './modules/ration/application/ration.service.js'
+import { SupabaseRationRepository } from './modules/ration/infrastructure/supabase-ration.repository.js'
+import { createRationRouter } from './modules/ration/http/ration.routes.js'
+import { MaterialService } from './modules/material/application/material.service.js'
+import { SupabaseMaterialRepository } from './modules/material/infrastructure/supabase-material.repository.js'
+import { createMaterialRouter } from './modules/material/http/material.routes.js'
+import { ReportsService } from './modules/reports/application/reports.service.js'
+import { SupabaseReportsRepository } from './modules/reports/infrastructure/supabase-reports.repository.js'
+import { createReportsRouter } from './modules/reports/http/reports.routes.js'
 
 function createSecurityDependencies() {
   const adminClient = createAdminSupabaseClient()
@@ -77,6 +86,9 @@ function createSecurityDependencies() {
   const commsRepo = new SupabaseCommunicationRepository(adminClient)
   const welfareRepo = new SupabaseWelfareRepository(adminClient)
   const inventoryRepo = new SupabaseInventoryRepository(adminClient)
+  const rationRepo = new SupabaseRationRepository(adminClient)
+  const materialRepo = new SupabaseMaterialRepository(adminClient)
+  const reportsRepo = new SupabaseReportsRepository(adminClient)
 
   return {
     audit,
@@ -95,6 +107,9 @@ function createSecurityDependencies() {
     communicationService: new CommunicationService(commsRepo),
     welfareService: new WelfareService(welfareRepo),
     inventoryService: new InventoryService(inventoryRepo),
+    rationService: new RationService(rationRepo),
+    materialService: new MaterialService(materialRepo),
+    reportsService: new ReportsService(reportsRepo),
   }
 }
 
@@ -246,6 +261,33 @@ export function createApp() {
     '/api/v1',
     createInventoryRouter({
       service: security.inventoryService,
+      authentication: security.authentication,
+      authorization: security.authorization,
+      audit: security.audit,
+    }),
+  )
+  app.use(
+    '/api/v1',
+    createRationRouter({
+      service: security.rationService,
+      authentication: security.authentication,
+      authorization: security.authorization,
+      audit: security.audit,
+    }),
+  )
+  app.use(
+    '/api/v1',
+    createMaterialRouter({
+      service: security.materialService,
+      authentication: security.authentication,
+      authorization: security.authorization,
+      audit: security.audit,
+    }),
+  )
+  app.use(
+    '/api/v1',
+    createReportsRouter({
+      service: security.reportsService,
       authentication: security.authentication,
       authorization: security.authorization,
       audit: security.audit,

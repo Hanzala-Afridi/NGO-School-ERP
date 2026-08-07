@@ -989,3 +989,107 @@ export function voidExpense(token: string, id: string, voidReason: string): Prom
     body: JSON.stringify({ voidReason }),
   })
 }
+
+// ── Phase 10 Ration APIs ───────────────────────────────────────────────────
+
+export function getRationPackages(token: string): Promise<Record<string, unknown>[]> {
+  return request('/ration/packages', { method: 'GET', headers: authHeader(token) })
+}
+
+export function createRationPackage(token: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request('/ration/packages', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function getRationCycles(token: string): Promise<Record<string, unknown>[]> {
+  return request('/ration/cycles', { method: 'GET', headers: authHeader(token) })
+}
+
+export function createRationCycle(token: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request('/ration/cycles', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function generateRationAllocations(token: string, cycleId: string): Promise<Record<string, unknown>> {
+  return request(`/ration/cycles/${cycleId}/generate-allocations`, {
+    method: 'POST',
+    headers: authHeader(token),
+  })
+}
+
+export function getRationAllocations(token: string, cycleId: string): Promise<Record<string, unknown>[]> {
+  return request(`/ration/cycles/${cycleId}/allocations`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function approveRationAllocation(token: string, id: string): Promise<Record<string, unknown>> {
+  return request(`/ration/allocations/${id}/approve`, {
+    method: 'POST',
+    headers: authHeader(token),
+  })
+}
+
+export function issueRationAllocation(token: string, id: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request(`/ration/allocations/${id}/issue`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function reverseRationDistribution(token: string, id: string, reversalReason: string): Promise<Record<string, unknown>> {
+  return request(`/ration/distributions/${id}/reverse`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify({ reversalReason }),
+  })
+}
+
+// ── Phase 10 Student Material APIs ────────────────────────────────────────
+
+export function getStudentDistributions(token: string, studentId?: string): Promise<Record<string, unknown>[]> {
+  const qs = studentId ? `?studentId=${encodeURIComponent(studentId)}` : ''
+  return request(`/student-distributions${qs}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function issueStudentMaterial(token: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request('/student-distributions', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function approveMaterialReplacement(token: string, id: string): Promise<Record<string, unknown>> {
+  return request(`/student-distributions/${id}/approve-replacement`, {
+    method: 'POST',
+    headers: authHeader(token),
+  })
+}
+
+// ── Phase 11 Executive Analytics & Report APIs ──────────────────────────────
+
+export function getDashboardMetrics(token: string): Promise<Record<string, unknown>> {
+  return request('/reports/dashboard', { method: 'GET', headers: authHeader(token) })
+}
+
+export function getStudentsReport(token: string): Promise<Record<string, unknown>[]> {
+  return request('/reports/students', { method: 'GET', headers: authHeader(token) })
+}
+
+export function getClassStrengthReport(token: string): Promise<Record<string, unknown>[]> {
+  return request('/reports/class-strength', { method: 'GET', headers: authHeader(token) })
+}
+
+export function getExpensesReport(token: string): Promise<Record<string, unknown>[]> {
+  return request('/reports/expenses', { method: 'GET', headers: authHeader(token) })
+}
+
+export function getRationReport(token: string): Promise<Record<string, unknown>[]> {
+  return request('/reports/ration', { method: 'GET', headers: authHeader(token) })
+}
