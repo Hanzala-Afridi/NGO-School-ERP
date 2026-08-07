@@ -1,34 +1,31 @@
-export type { ApiError, ApiResponse, ErrorResponse, SuccessResponse } from './api-envelope.js'
-export type {
-  AcademicYear,
-  Campus,
-  Class,
-  EntityStatus,
-  School,
-  Section,
-  Subject,
-  TeacherAssignment,
-  Term,
-  TimetableEntry,
-} from './academics.js'
-export type { AuthProfile, AuthSession, CurrentIdentity } from './auth.js'
-export type { PaginatedUsers, UserSummary } from './identity.js'
-export type { Permission, Role } from './rbac.js'
-export type {
-  EmploymentStatus,
-  Gender,
-  Parent,
-  ParentRelationship,
-  Student,
-  StudentParentLink,
-  StudentSiblingLink,
-  StudentStatus,
-  Teacher,
-} from './people.js'
-export type { Attachment, Enrollment, EnrollmentStatus } from './enrollments.js'
-export * from './attendance.js'
-export * from './homework.js'
-export * from './progress.js'
+export interface SuccessResponse<T> {
+  success: true
+  data: T
+  meta?: Record<string, unknown>
+}
+
+export interface ErrorResponse {
+  success: false
+  error: {
+    code: string
+    message: string
+    details?: unknown[]
+  }
+}
+
+export type ApiResponse<T> = SuccessResponse<T> | ErrorResponse
+
+export * from './academics.js'
 export * from './announcements.js'
-export * from './exams.js'
+export * from './attendance.js'
+export * from './auth.js'
 export * from './communication.js'
+export * from './enrollments.js'
+export * from './exams.js'
+export * from './homework.js'
+export * from './identity.js'
+export * from './inventory.js'
+export * from './people.js'
+export * from './progress.js'
+export * from './rbac.js'
+export * from './welfare.js'

@@ -898,4 +898,94 @@ export function resolveComplaint(token: string, id: string, resolution: string):
   })
 }
 
+// ── Phase 8: Welfare ─────────────────────────────────────────────────────────
 
+export function getHouseholds(token: string): Promise<Record<string, unknown>[]> {
+  return request('/households', { method: 'GET', headers: authHeader(token) })
+}
+
+export function createHousehold(token: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request('/households', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function getHouseholdById(token: string, id: string): Promise<Record<string, unknown>> {
+  return request(`/households/${id}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function addHouseholdMember(token: string, householdId: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request(`/households/${householdId}/members`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function createWelfareAssessment(token: string, householdId: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request(`/households/${householdId}/assessments`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function approveWelfareAssessment(token: string, assessmentId: string): Promise<Record<string, unknown>> {
+  return request(`/welfare-assessments/${assessmentId}/approve`, {
+    method: 'POST',
+    headers: authHeader(token),
+  })
+}
+
+export function getParentWelfare(token: string): Promise<Record<string, unknown>> {
+  return request('/parent/welfare', { method: 'GET', headers: authHeader(token) })
+}
+
+// ── Phase 9: Inventory & Expenses ───────────────────────────────────────────
+
+export function getInventoryItems(token: string): Promise<Record<string, unknown>[]> {
+  return request('/inventory/items', { method: 'GET', headers: authHeader(token) })
+}
+
+export function createInventoryItem(token: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request('/inventory/items', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function recordStockTransaction(token: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request('/inventory/transactions', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function getStockLedger(token: string, itemId?: string): Promise<Record<string, unknown>[]> {
+  const qs = itemId ? `?itemId=${encodeURIComponent(itemId)}` : ''
+  return request(`/inventory/ledger${qs}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function getExpenses(token: string): Promise<Record<string, unknown>[]> {
+  return request('/expenses', { method: 'GET', headers: authHeader(token) })
+}
+
+export function createExpense(token: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request('/expenses', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function voidExpense(token: string, id: string, voidReason: string): Promise<Record<string, unknown>> {
+  return request(`/expenses/${id}/void`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify({ voidReason }),
+  })
+}

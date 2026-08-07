@@ -52,6 +52,12 @@ import { createExamsRouter } from './modules/exams/http/exams.routes.js'
 import { CommunicationService } from './modules/communication/application/communication.service.js'
 import { SupabaseCommunicationRepository } from './modules/communication/infrastructure/supabase-communication.repository.js'
 import { createCommunicationRouter } from './modules/communication/http/communication.routes.js'
+import { WelfareService } from './modules/welfare/application/welfare.service.js'
+import { SupabaseWelfareRepository } from './modules/welfare/infrastructure/supabase-welfare.repository.js'
+import { createWelfareRouter } from './modules/welfare/http/welfare.routes.js'
+import { InventoryService } from './modules/inventory/application/inventory.service.js'
+import { SupabaseInventoryRepository } from './modules/inventory/infrastructure/supabase-inventory.repository.js'
+import { createInventoryRouter } from './modules/inventory/http/inventory.routes.js'
 
 function createSecurityDependencies() {
   const adminClient = createAdminSupabaseClient()
@@ -69,6 +75,8 @@ function createSecurityDependencies() {
   const announcementsRepo = new SupabaseAnnouncementsRepository(adminClient)
   const examsRepo = new SupabaseExamsRepository(adminClient)
   const commsRepo = new SupabaseCommunicationRepository(adminClient)
+  const welfareRepo = new SupabaseWelfareRepository(adminClient)
+  const inventoryRepo = new SupabaseInventoryRepository(adminClient)
 
   return {
     audit,
@@ -85,6 +93,8 @@ function createSecurityDependencies() {
     announcementsService: new AnnouncementsService(announcementsRepo),
     examsService: new ExamsService(examsRepo),
     communicationService: new CommunicationService(commsRepo),
+    welfareService: new WelfareService(welfareRepo),
+    inventoryService: new InventoryService(inventoryRepo),
   }
 }
 
@@ -218,6 +228,24 @@ export function createApp() {
     '/api/v1',
     createCommunicationRouter({
       service: security.communicationService,
+      authentication: security.authentication,
+      authorization: security.authorization,
+      audit: security.audit,
+    }),
+  )
+  app.use(
+    '/api/v1',
+    createWelfareRouter({
+      service: security.welfareService,
+      authentication: security.authentication,
+      authorization: security.authorization,
+      audit: security.audit,
+    }),
+  )
+  app.use(
+    '/api/v1',
+    createInventoryRouter({
+      service: security.inventoryService,
       authentication: security.authentication,
       authorization: security.authorization,
       audit: security.audit,
