@@ -46,6 +46,12 @@ import { createProgressRouter } from './modules/progress/http/progress.routes.js
 import { AnnouncementsService } from './modules/announcements/application/announcements.service.js'
 import { SupabaseAnnouncementsRepository } from './modules/announcements/infrastructure/supabase-announcements.repository.js'
 import { createAnnouncementsRouter } from './modules/announcements/http/announcements.routes.js'
+import { ExamsService } from './modules/exams/application/exams.service.js'
+import { SupabaseExamsRepository } from './modules/exams/infrastructure/supabase-exams.repository.js'
+import { createExamsRouter } from './modules/exams/http/exams.routes.js'
+import { CommunicationService } from './modules/communication/application/communication.service.js'
+import { SupabaseCommunicationRepository } from './modules/communication/infrastructure/supabase-communication.repository.js'
+import { createCommunicationRouter } from './modules/communication/http/communication.routes.js'
 
 function createSecurityDependencies() {
   const adminClient = createAdminSupabaseClient()
@@ -61,6 +67,8 @@ function createSecurityDependencies() {
   const homeworkRepo = new SupabaseHomeworkRepository(adminClient)
   const progressRepo = new SupabaseProgressRepository(adminClient)
   const announcementsRepo = new SupabaseAnnouncementsRepository(adminClient)
+  const examsRepo = new SupabaseExamsRepository(adminClient)
+  const commsRepo = new SupabaseCommunicationRepository(adminClient)
 
   return {
     audit,
@@ -75,6 +83,8 @@ function createSecurityDependencies() {
     homeworkService: new HomeworkService(homeworkRepo),
     progressService: new ProgressService(progressRepo),
     announcementsService: new AnnouncementsService(announcementsRepo),
+    examsService: new ExamsService(examsRepo),
+    communicationService: new CommunicationService(commsRepo),
   }
 }
 
@@ -190,6 +200,24 @@ export function createApp() {
     '/api/v1',
     createAnnouncementsRouter({
       service: security.announcementsService,
+      authentication: security.authentication,
+      authorization: security.authorization,
+      audit: security.audit,
+    }),
+  )
+  app.use(
+    '/api/v1',
+    createExamsRouter({
+      service: security.examsService,
+      authentication: security.authentication,
+      authorization: security.authorization,
+      audit: security.audit,
+    }),
+  )
+  app.use(
+    '/api/v1',
+    createCommunicationRouter({
+      service: security.communicationService,
       authentication: security.authentication,
       authorization: security.authorization,
       audit: security.audit,

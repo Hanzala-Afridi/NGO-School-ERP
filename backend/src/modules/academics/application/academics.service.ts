@@ -480,6 +480,31 @@ export class AcademicsService {
       room?: string | null
     },
   ): Promise<TimetableEntry> {
+    if (input.endTime <= input.startTime) {
+      throw new AppError(400, 'INVALID_TIME_RANGE', 'End time must be after start time')
+    }
+
+    const existing = await this.repository.listTimetableEntries({
+      academicYearId: input.academicYearId,
+      weekday: input.weekday,
+    })
+
+    for (const item of existing) {
+      if (item.status === 'inactive') continue
+      const isOverlap = input.startTime < item.endTime && item.startTime < input.endTime
+      if (!isOverlap) continue
+
+      if (input.teacherId && item.teacherId === input.teacherId) {
+        throw new AppError(409, 'TIMETABLE_TEACHER_CLASH', 'Teacher is already scheduled for another class during this time period')
+      }
+      if (input.classId === item.classId && (input.sectionId === item.sectionId || !input.sectionId || !item.sectionId)) {
+        throw new AppError(409, 'TIMETABLE_SECTION_CLASH', 'Class/Section is already scheduled for another subject during this time period')
+      }
+      if (input.room && item.room && input.room === item.room) {
+        throw new AppError(409, 'TIMETABLE_ROOM_CLASH', 'Room is already booked during this time period')
+      }
+    }
+
     const entry = await this.repository.createTimetableEntry(input)
     await this.audit.record({
       actorProfileId: actor.profile.id,

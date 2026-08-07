@@ -764,4 +764,138 @@ export function publishAnnouncement(token: string, id: string): Promise<Record<s
   return request(`/announcements/${id}/publish`, { method: 'POST', headers: authHeader(token) })
 }
 
+// Phase 6: Exams & Results
+
+export function getExams(token: string, params?: { academicYearId?: string; termId?: string }): Promise<Record<string, unknown>[]> {
+  const query = new URLSearchParams(params as Record<string, string>).toString()
+  const qs = query ? `?${query}` : ''
+  return request(`/exams${qs}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function createExam(token: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request('/exams', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updateExamStatus(token: string, id: string, status: string): Promise<Record<string, unknown>> {
+  return request(`/exams/${id}`, {
+    method: 'PATCH',
+    headers: authHeader(token),
+    body: JSON.stringify({ status }),
+  })
+}
+
+export function getExamComponents(token: string, examId: string, params?: { classId?: string; sectionId?: string }): Promise<Record<string, unknown>[]> {
+  const query = new URLSearchParams(params as Record<string, string>).toString()
+  const qs = query ? `?${query}` : ''
+  return request(`/exams/${examId}/components${qs}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function createExamComponent(token: string, examId: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request(`/exams/${examId}/components`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function getComponentResults(token: string, componentId: string): Promise<Record<string, unknown>[]> {
+  return request(`/exam-components/${componentId}/results`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function bulkEnterMarks(token: string, componentId: string, results: Record<string, unknown>[]): Promise<Record<string, unknown>[]> {
+  return request(`/exam-components/${componentId}/results`, {
+    method: 'PUT',
+    headers: authHeader(token),
+    body: JSON.stringify({ results }),
+  })
+}
+
+export function approveExamResults(token: string, examId: string): Promise<Record<string, unknown>> {
+  return request(`/exams/${examId}/approve`, { method: 'POST', headers: authHeader(token) })
+}
+
+export function publishExamResults(token: string, examId: string): Promise<Record<string, unknown>> {
+  return request(`/exams/${examId}/publish`, { method: 'POST', headers: authHeader(token) })
+}
+
+export function getStudentReportCard(token: string, studentId: string, examId: string): Promise<Record<string, unknown>> {
+  return request(`/students/${studentId}/report-card?examId=${encodeURIComponent(examId)}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function getParentChildResults(token: string, studentId: string): Promise<Record<string, unknown>[]> {
+  return request(`/parents/me/children/${studentId}/results`, { method: 'GET', headers: authHeader(token) })
+}
+
+// Phase 7: Messaging & Complaints
+
+export function getConversations(token: string): Promise<Record<string, unknown>[]> {
+  return request('/conversations', { method: 'GET', headers: authHeader(token) })
+}
+
+export function createConversation(token: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request('/conversations', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function getMessages(token: string, conversationId: string): Promise<Record<string, unknown>[]> {
+  return request(`/conversations/${conversationId}/messages`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function sendMessage(token: string, conversationId: string, payload: { body: string; attachmentPath?: string | null }): Promise<Record<string, unknown>> {
+  return request(`/conversations/${conversationId}/messages`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function getComplaints(token: string, params?: { parentId?: string; teacherId?: string }): Promise<Record<string, unknown>[]> {
+  const query = new URLSearchParams(params as Record<string, string>).toString()
+  const qs = query ? `?${query}` : ''
+  return request(`/complaints${qs}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function createComplaint(token: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request('/complaints', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function getComplaintById(token: string, id: string): Promise<Record<string, unknown>> {
+  return request(`/complaints/${id}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function assignComplaint(token: string, id: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request(`/complaints/${id}/assign`, {
+    method: 'PATCH',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updateComplaintStatus(token: string, id: string, status: string, note?: string): Promise<Record<string, unknown>> {
+  return request(`/complaints/${id}/status`, {
+    method: 'PATCH',
+    headers: authHeader(token),
+    body: JSON.stringify({ status, note }),
+  })
+}
+
+export function resolveComplaint(token: string, id: string, resolution: string): Promise<Record<string, unknown>> {
+  return request(`/complaints/${id}/resolve`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify({ resolution }),
+  })
+}
+
 
