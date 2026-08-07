@@ -67,6 +67,12 @@ import { createMaterialRouter } from './modules/material/http/material.routes.js
 import { ReportsService } from './modules/reports/application/reports.service.js'
 import { SupabaseReportsRepository } from './modules/reports/infrastructure/supabase-reports.repository.js'
 import { createReportsRouter } from './modules/reports/http/reports.routes.js'
+import { SystemService } from './modules/system/application/system.service.js'
+import { SupabaseSystemRepository } from './modules/system/infrastructure/supabase-system.repository.js'
+import { createSystemRouter } from './modules/system/http/system.routes.js'
+import { ArchivalService } from './modules/archival/application/archival.service.js'
+import { SupabaseArchivalRepository } from './modules/archival/infrastructure/supabase-archival.repository.js'
+import { createArchivalRouter } from './modules/archival/http/archival.routes.js'
 
 function createSecurityDependencies() {
   const adminClient = createAdminSupabaseClient()
@@ -89,6 +95,8 @@ function createSecurityDependencies() {
   const rationRepo = new SupabaseRationRepository(adminClient)
   const materialRepo = new SupabaseMaterialRepository(adminClient)
   const reportsRepo = new SupabaseReportsRepository(adminClient)
+  const systemRepo = new SupabaseSystemRepository(adminClient)
+  const archivalRepo = new SupabaseArchivalRepository(adminClient)
 
   return {
     audit,
@@ -110,6 +118,8 @@ function createSecurityDependencies() {
     rationService: new RationService(rationRepo),
     materialService: new MaterialService(materialRepo),
     reportsService: new ReportsService(reportsRepo),
+    systemService: new SystemService(systemRepo),
+    archivalService: new ArchivalService(archivalRepo),
   }
 }
 
@@ -288,6 +298,24 @@ export function createApp() {
     '/api/v1',
     createReportsRouter({
       service: security.reportsService,
+      authentication: security.authentication,
+      authorization: security.authorization,
+      audit: security.audit,
+    }),
+  )
+  app.use(
+    '/api/v1',
+    createSystemRouter({
+      service: security.systemService,
+      authentication: security.authentication,
+      authorization: security.authorization,
+      audit: security.audit,
+    }),
+  )
+  app.use(
+    '/api/v1',
+    createArchivalRouter({
+      service: security.archivalService,
       authentication: security.authentication,
       authorization: security.authorization,
       audit: security.audit,

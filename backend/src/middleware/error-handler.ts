@@ -27,6 +27,12 @@ export const errorHandler: ErrorRequestHandler = (error, request, response, _nex
     return
   }
 
+  if (error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted'))) {
+    logger.warn({ requestId: request.id }, 'Query execution timed out')
+    response.status(504).json(errorResponse('QUERY_TIMEOUT', 'Database request timed out'))
+    return
+  }
+
   logger.error(
     {
       err: error instanceof Error ? { message: error.message, stack: error.stack, name: error.name } : error,

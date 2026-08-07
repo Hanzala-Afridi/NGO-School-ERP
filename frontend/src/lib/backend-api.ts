@@ -1093,3 +1093,32 @@ export function getExpensesReport(token: string): Promise<Record<string, unknown
 export function getRationReport(token: string): Promise<Record<string, unknown>[]> {
   return request('/reports/ration', { method: 'GET', headers: authHeader(token) })
 }
+
+// ── Phase 12 System Diagnostics, Audit Logs & Archival APIs ────────────────
+
+export function getSystemDiagnostics(token: string): Promise<Record<string, unknown>> {
+  return request('/health/system-diagnostics', { method: 'GET', headers: authHeader(token) })
+}
+
+export function getAuditLogs(token: string, filter?: Record<string, unknown>): Promise<Record<string, unknown>[]> {
+  const params = new URLSearchParams()
+  if (filter) {
+    Object.entries(filter).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') params.append(k, String(v))
+    })
+  }
+  const qs = params.toString() ? `?${params.toString()}` : ''
+  return request(`/system/audit-logs${qs}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function getAcademicYearArchives(token: string): Promise<Record<string, unknown>[]> {
+  return request('/archival/academic-years', { method: 'GET', headers: authHeader(token) })
+}
+
+export function archiveAcademicYear(token: string, id: string, notes?: string): Promise<Record<string, unknown>> {
+  return request(`/archival/academic-years/${id}`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify({ notes }),
+  })
+}
