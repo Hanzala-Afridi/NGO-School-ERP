@@ -26,7 +26,6 @@ const WEEKDAYS = [
 
 function TimetableRow({
   entry,
-  academicYears,
   classes,
   sections,
   subjects,
@@ -41,7 +40,6 @@ function TimetableRow({
   const [updateState, updateDispatch, updatePending] = useActionState(updateTimetableEntryAction, {})
   const [deleteState, deleteDispatch, deletePending] = useActionState(deleteTimetableEntryAction, {})
 
-  const year = academicYears.find((y) => y.id === entry.academicYearId)
   const cls = classes.find((c) => c.id === entry.classId)
   const sec = sections.find((s) => s.id === entry.sectionId)
   const subj = subjects.find((sb) => sb.id === entry.subjectId)

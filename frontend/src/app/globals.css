@@ -2,16 +2,22 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(0.985 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: oklch(0.985 0.005 160);
+  --foreground: oklch(0.18 0.02 160);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.27 0.07 255);
+  --card-foreground: oklch(0.18 0.02 160);
+  --primary: oklch(0.38 0.12 165);
   --primary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.45 0 0);
-  --border: oklch(0.9 0 0);
-  --ring: oklch(0.55 0.15 255);
+  --secondary: oklch(0.94 0.02 160);
+  --secondary-foreground: oklch(0.25 0.08 165);
+  --accent: oklch(0.68 0.18 65);
+  --accent-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.96 0.008 160);
+  --muted-foreground: oklch(0.45 0.03 160);
+  --destructive: oklch(0.57 0.22 27);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.90 0.015 160);
+  --ring: oklch(0.48 0.14 165);
 }
 
 @theme inline {
@@ -23,8 +29,14 @@
   --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-ring: var(--ring);
   --radius-sm: calc(var(--radius) * 0.75);
@@ -40,4 +52,43 @@
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* ── Animation Keyframes & Utilities ──────────────────────────────────────── */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.35s ease-out forwards;
+}
+
+.animate-pop-in {
+  animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-pop-in {
+    animation: none !important;
+  }
 }

@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 
-import { createClient } from '@/lib/supabase/server'
+import { PageHeader } from '@/components/layout/page-header'
 import {
   getAcademicYears,
   getClasses,
@@ -8,6 +8,7 @@ import {
   getSubjects,
   getTeacherAssignments,
 } from '@/lib/backend-api'
+import { createClient } from '@/lib/supabase/server'
 import { TeacherAssignmentsList } from './_components/teacher-assignments-list'
 
 export const metadata = { title: 'Teacher Assignments — NGO School ERP' }
@@ -31,11 +32,12 @@ export default async function TeacherAssignmentsPage({
   ])
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-tight mb-1">Teacher Assignments</h1>
-      <p className="text-muted-foreground text-sm mb-6">
-        Assign teachers to classes, sections, or subjects.
-      </p>
+    <div className="space-y-6">
+      <PageHeader
+        title="Teacher Assignments Management"
+        description="Assign faculty members as Class Teachers or Subject Teachers across academic years, classes, and sections."
+        breadcrumbs={[{ label: 'Academic Setup' }, { label: 'Teacher Assignments' }]}
+      />
       <TeacherAssignmentsList
         assignments={assignments}
         academicYears={academicYears}

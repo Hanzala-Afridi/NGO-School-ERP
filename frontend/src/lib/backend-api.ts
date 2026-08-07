@@ -1,13 +1,24 @@
 import type {
   AcademicYear,
   ApiResponse,
+  Attachment,
   AuthSession,
   Campus,
   Class,
   CurrentIdentity,
+  EmploymentStatus,
+  Enrollment,
+  EnrollmentStatus,
+  Gender,
+  Parent,
+  ParentRelationship,
   School,
   Section,
+  Student,
+  StudentParentLink,
+  StudentSiblingLink,
   Subject,
+  Teacher,
   TeacherAssignment,
   Term,
   TimetableEntry,
@@ -364,3 +375,393 @@ export function deleteTimetableEntry(token: string, id: string): Promise<void> {
     headers: authHeader(token),
   }).then(() => undefined)
 }
+
+// ── Students ─────────────────────────────────────────────────────────────
+
+export function getStudents(
+  token: string,
+  filter?: { schoolId?: string; status?: string; gender?: Gender; search?: string; page?: number; limit?: number },
+): Promise<Student[]> {
+  const params = new URLSearchParams()
+  if (filter?.schoolId) params.set('schoolId', filter.schoolId)
+  if (filter?.status) params.set('status', filter.status)
+  if (filter?.gender) params.set('gender', filter.gender)
+  if (filter?.search) params.set('search', filter.search)
+  if (filter?.page) params.set('page', String(filter.page))
+  if (filter?.limit) params.set('limit', String(filter.limit))
+  const qs = params.toString() ? `?${params.toString()}` : ''
+  return request(`/students${qs}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function getStudent(token: string, id: string): Promise<Student> {
+  return request(`/students/${id}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function createStudent(
+  token: string,
+  input: {
+    schoolId: string
+    studentNumber?: string
+    fullName: string
+    dateOfBirth: string
+    gender: Gender
+    admissionDate?: string
+    profileImageUrl?: string | null
+    address?: string | null
+    emergencyNotes?: string | null
+  },
+): Promise<Student> {
+  return request('/students', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(input),
+  })
+}
+
+export function updateStudent(
+  token: string,
+  id: string,
+  patch: Partial<Omit<Student, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>>,
+): Promise<Student> {
+  return request(`/students/${id}`, {
+    method: 'PATCH',
+    headers: authHeader(token),
+    body: JSON.stringify(patch),
+  })
+}
+
+export function archiveStudent(token: string, id: string): Promise<Student> {
+  return request(`/students/${id}/archive`, {
+    method: 'POST',
+    headers: authHeader(token),
+  })
+}
+
+export function getStudentHistory(token: string, id: string): Promise<Array<{ event: string; timestamp: string; details: string }>> {
+  return request(`/students/${id}/history`, { method: 'GET', headers: authHeader(token) })
+}
+
+// ── Student Documents ────────────────────────────────────────────────────
+
+export function getStudentDocuments(token: string, studentId: string): Promise<Attachment[]> {
+  return request(`/students/${studentId}/documents`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function createStudentDocument(
+  token: string,
+  studentId: string,
+  input: { fileName: string; storagePath: string; mimeType: string; sizeBytes: number },
+): Promise<Attachment> {
+  return request(`/students/${studentId}/documents`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(input),
+  })
+}
+
+export function deleteStudentDocument(token: string, studentId: string, documentId: string): Promise<void> {
+  return request(`/students/${studentId}/documents/${documentId}`, {
+    method: 'DELETE',
+    headers: authHeader(token),
+  }).then(() => undefined)
+}
+
+// ── Parents ──────────────────────────────────────────────────────────────
+
+export function getParents(
+  token: string,
+  filter?: { search?: string; page?: number; limit?: number },
+): Promise<Parent[]> {
+  const params = new URLSearchParams()
+  if (filter?.search) params.set('search', filter.search)
+  if (filter?.page) params.set('page', String(filter.page))
+  if (filter?.limit) params.set('limit', String(filter.limit))
+  const qs = params.toString() ? `?${params.toString()}` : ''
+  return request(`/parents${qs}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function getParent(token: string, id: string): Promise<Parent> {
+  return request(`/parents/${id}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function createParent(
+  token: string,
+  input: { profileId: string; fullName: string; phone?: string | null; email?: string | null; occupation?: string | null; address?: string | null },
+): Promise<Parent> {
+  return request('/parents', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(input),
+  })
+}
+
+export function updateParent(
+  token: string,
+  id: string,
+  patch: Partial<Omit<Parent, 'id' | 'createdAt' | 'updatedAt' | 'profileId'>>,
+): Promise<Parent> {
+  return request(`/parents/${id}`, {
+    method: 'PATCH',
+    headers: authHeader(token),
+    body: JSON.stringify(patch),
+  })
+}
+
+export function getStudentParents(token: string, studentId: string): Promise<StudentParentLink[]> {
+  return request(`/students/${studentId}/parents`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function linkStudentParent(
+  token: string,
+  studentId: string,
+  input: { parentId: string; relationship: ParentRelationship; isPrimary?: boolean; receivesNotifications?: boolean; portalAccessEnabled?: boolean },
+): Promise<StudentParentLink> {
+  return request(`/students/${studentId}/parents`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(input),
+  })
+}
+
+export function getStudentSiblings(token: string, studentId: string): Promise<StudentSiblingLink[]> {
+  return request(`/students/${studentId}/siblings`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function linkStudentSiblings(token: string, studentId: string, siblingStudentId: string): Promise<StudentSiblingLink> {
+  return request(`/students/${studentId}/siblings`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify({ siblingStudentId }),
+  })
+}
+
+// ── Teachers ─────────────────────────────────────────────────────────────
+
+export function getTeachers(
+  token: string,
+  filter?: { employmentStatus?: EmploymentStatus; search?: string; page?: number; limit?: number },
+): Promise<Teacher[]> {
+  const params = new URLSearchParams()
+  if (filter?.employmentStatus) params.set('employmentStatus', filter.employmentStatus)
+  if (filter?.search) params.set('search', filter.search)
+  if (filter?.page) params.set('page', String(filter.page))
+  if (filter?.limit) params.set('limit', String(filter.limit))
+  const qs = params.toString() ? `?${params.toString()}` : ''
+  return request(`/teachers${qs}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function getTeacher(token: string, id: string): Promise<Teacher> {
+  return request(`/teachers/${id}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function createTeacher(
+  token: string,
+  input: { profileId: string; employeeNumber?: string; qualification?: string | null; joiningDate?: string; employmentStatus?: EmploymentStatus },
+): Promise<Teacher> {
+  return request('/teachers', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(input),
+  })
+}
+
+export function updateTeacher(
+  token: string,
+  id: string,
+  patch: Partial<Omit<Teacher, 'id' | 'createdAt' | 'updatedAt' | 'profileId'>>,
+): Promise<Teacher> {
+  return request(`/teachers/${id}`, {
+    method: 'PATCH',
+    headers: authHeader(token),
+    body: JSON.stringify(patch),
+  })
+}
+
+// ── Enrollments ──────────────────────────────────────────────────────────
+
+export function getEnrollments(
+  token: string,
+  filter?: { studentId?: string; academicYearId?: string; classId?: string; sectionId?: string; status?: EnrollmentStatus; page?: number; limit?: number },
+): Promise<Enrollment[]> {
+  const params = new URLSearchParams()
+  if (filter?.studentId) params.set('studentId', filter.studentId)
+  if (filter?.academicYearId) params.set('academicYearId', filter.academicYearId)
+  if (filter?.classId) params.set('classId', filter.classId)
+  if (filter?.sectionId) params.set('sectionId', filter.sectionId)
+  if (filter?.status) params.set('status', filter.status)
+  if (filter?.page) params.set('page', String(filter.page))
+  if (filter?.limit) params.set('limit', String(filter.limit))
+  const qs = params.toString() ? `?${params.toString()}` : ''
+  return request(`/enrollments${qs}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function getEnrollment(token: string, id: string): Promise<Enrollment> {
+  return request(`/enrollments/${id}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function createEnrollment(
+  token: string,
+  input: { studentId: string; academicYearId: string; classId: string; sectionId?: string | null; rollNumber?: number | null; startDate?: string },
+): Promise<Enrollment> {
+  return request('/enrollments', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(input),
+  })
+}
+
+export function updateEnrollment(
+  token: string,
+  id: string,
+  patch: Partial<Omit<Enrollment, 'id' | 'createdAt' | 'updatedAt' | 'studentId' | 'academicYearId'>>,
+): Promise<Enrollment> {
+  return request(`/enrollments/${id}`, {
+    method: 'PATCH',
+    headers: authHeader(token),
+    body: JSON.stringify(patch),
+  })
+}
+
+export function promoteEnrollment(
+  token: string,
+  id: string,
+  input: { targetAcademicYearId: string; targetClassId: string; targetSectionId?: string | null; newRollNumber?: number | null },
+): Promise<Enrollment> {
+  return request(`/enrollments/${id}/promote`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(input),
+  })
+}
+
+export function transferEnrollment(
+  token: string,
+  id: string,
+  input: { targetClassId?: string; targetSectionId: string; newRollNumber?: number | null },
+): Promise<Enrollment> {
+  return request(`/enrollments/${id}/transfer`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(input),
+  })
+}
+
+export function withdrawEnrollment(token: string, id: string, reason?: string): Promise<Enrollment> {
+  return request(`/enrollments/${id}/withdraw`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify({ reason }),
+  })
+}
+
+// ── Phase 4: Attendance ───────────────────────────────────────────────────
+
+export function getAttendanceSessions(token: string, params?: { academicYearId?: string; classId?: string; sectionId?: string; date?: string }): Promise<Record<string, unknown>[]> {
+  const query = new URLSearchParams(params as Record<string, string>).toString()
+  const qs = query ? `?${query}` : ''
+  return request(`/attendance/sessions${qs}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function bulkMarkAttendance(token: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request('/attendance/sessions/records', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function lockAttendanceSession(token: string, sessionId: string): Promise<Record<string, unknown>> {
+  return request(`/attendance/sessions/${sessionId}/lock`, {
+    method: 'POST',
+    headers: authHeader(token),
+  })
+}
+
+export function requestAttendanceCorrection(token: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request('/attendance/corrections/request', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function getPendingCorrections(token: string): Promise<Record<string, unknown>[]> {
+  return request('/attendance/corrections/pending', { method: 'GET', headers: authHeader(token) })
+}
+
+export function reviewAttendanceCorrection(token: string, id: string, status: 'approved' | 'rejected'): Promise<Record<string, unknown>> {
+  return request(`/attendance/corrections/${id}/review`, {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify({ status }),
+  })
+}
+
+export function getStudentAttendanceHistory(token: string, studentId: string): Promise<Record<string, unknown>[]> {
+  return request(`/attendance/students/${studentId}/history`, { method: 'GET', headers: authHeader(token) })
+}
+
+// ── Phase 5: Homework, Progress, Announcements ────────────────────────────
+
+export function getHomework(token: string, params?: { teacherAssignmentId?: string; status?: string }): Promise<Record<string, unknown>[]> {
+  const query = new URLSearchParams(params as Record<string, string>).toString()
+  const qs = query ? `?${query}` : ''
+  return request(`/homework${qs}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function createHomework(token: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request('/homework', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function deleteHomework(token: string, id: string): Promise<Record<string, unknown>> {
+  return request(`/homework/${id}`, { method: 'DELETE', headers: authHeader(token) })
+}
+
+export function getProgressCategories(token: string, schoolId?: string): Promise<Record<string, unknown>[]> {
+  const qs = schoolId ? `?schoolId=${encodeURIComponent(schoolId)}` : ''
+  return request(`/progress/categories${qs}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function getStudentProgress(token: string, studentId: string): Promise<Record<string, unknown>[]> {
+  return request(`/progress/students/${studentId}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function recordStudentProgress(token: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request('/progress/students/record', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function publishStudentProgress(token: string, id: string): Promise<Record<string, unknown>> {
+  return request(`/progress/${id}/publish`, { method: 'POST', headers: authHeader(token) })
+}
+
+export function getClassProgressSummary(token: string, classId: string): Promise<Record<string, unknown>[]> {
+  return request(`/classes/${classId}/progress-summary`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function getAnnouncements(token: string, params?: { schoolId?: string; status?: string }): Promise<Record<string, unknown>[]> {
+  const query = new URLSearchParams(params as Record<string, string>).toString()
+  const qs = query ? `?${query}` : ''
+  return request(`/announcements${qs}`, { method: 'GET', headers: authHeader(token) })
+}
+
+export function createAnnouncement(token: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return request('/announcements', {
+    method: 'POST',
+    headers: authHeader(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function publishAnnouncement(token: string, id: string): Promise<Record<string, unknown>> {
+  return request(`/announcements/${id}/publish`, { method: 'POST', headers: authHeader(token) })
+}
+
+

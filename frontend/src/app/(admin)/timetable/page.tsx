@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 
-import { createClient } from '@/lib/supabase/server'
+import { PageHeader } from '@/components/layout/page-header'
 import {
   getAcademicYears,
   getClasses,
@@ -8,6 +8,7 @@ import {
   getSubjects,
   getTimetableEntries,
 } from '@/lib/backend-api'
+import { createClient } from '@/lib/supabase/server'
 import { TimetableList } from './_components/timetable-list'
 
 export const metadata = { title: 'Timetable — NGO School ERP' }
@@ -31,11 +32,12 @@ export default async function TimetablePage({
   ])
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-tight mb-1">Timetable Foundation</h1>
-      <p className="text-muted-foreground text-sm mb-6">
-        Manage weekly schedule slots for classes and subjects.
-      </p>
+    <div className="space-y-6">
+      <PageHeader
+        title="Weekly Timetable Schedule"
+        description="Schedule weekly class period slots, subject allocations, and classroom locations."
+        breadcrumbs={[{ label: 'Academic Setup' }, { label: 'Timetable' }]}
+      />
       <TimetableList
         entries={entries}
         academicYears={academicYears}
